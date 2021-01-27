@@ -1,11 +1,13 @@
-from PyQt5.QtWidgets import QDialog, QPlainTextEdit, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget,QDialog, QPlainTextEdit, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout
 from PyQt5.QtWidgets import QGroupBox
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5.QtWebChannel import *
-from PyQt5.QtCore import QUrl, pyqtSignal
+from PyQt5 import QtCore
+from PyQt5.QtCore import *
 from TInteractObject import TInteractObj
  
 class TMainWindow(QDialog):
+    
     SigSendMessageToJS = pyqtSignal(str)
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -44,7 +46,6 @@ class TMainWindow(QDialog):
         self.pWebChannel = QWebChannel(self.mpJSWebView.page())
         self.pInteractObj = TInteractObj(self)
         self.pWebChannel.registerObject("interactObj", self.pInteractObj)
- 
         self.mpJSWebView.page().setWebChannel(self.pWebChannel)
  
         self.url = 'file:///D:/python/pyqt/web/JSTest.html'
@@ -91,3 +92,40 @@ class TMainWindow(QDialog):
             return
         self.mpJSWebView.page().runJavaScript("output(%s)" %strMessage)
         self.mpJSWebView.page().runJavaScript("showAlert()")
+    
+    def keyPressEvent(self,event):
+        print("按下：" + str(event.key()))
+        if(event.key() == Qt.Key_F12):
+            print('测试：F12')
+            # self.hide()#隐藏此窗口
+            self.s = TDevWindow()#将第二个窗口换个名字
+            self.s.show()#经第二个窗口显示出来
+            self.mpJSWebView.page().setDevToolsPage(self.s.mpJSWebView.page())
+
+
+class TDevWindow(QDialog):
+    def __init__(self):
+        super(TDevWindow, self).__init__()
+        self.init_ui()
+
+    def init_ui(self):
+        self.mpJSWebView = QWebEngineView(self)
+        self.url = 'https://www.baidu.com/'
+        self.mpJSWebView.page().load(QUrl(self.url))
+        self.mpJSWebView.show()
+ 
+        self.pJSTotalVLayout = QVBoxLayout()
+        self.pJSTotalVLayout.setSpacing(0)
+        self.pJSTotalVLayout.addWidget(self.mpJSWebView)
+        self.pWebGroup = QGroupBox('Web View', self)
+        self.pWebGroup.setLayout(self.pJSTotalVLayout)
+
+        self.mainLayout = QHBoxLayout()
+        self.mainLayout.setSpacing(5)
+        self.mainLayout.addWidget(self.pWebGroup)
+        self.setLayout(self.mainLayout)
+        self.setMinimumSize(800, 800)
+
+       
+    
+    
